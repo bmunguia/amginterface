@@ -118,7 +118,7 @@ int SplitSolution (Mesh *Msh, char *prefix, char *adap_sensor)
 	double *OutSol = NULL;
 	char OutNam[256];
 	
-	int pres_flag=0, mach_flag=0, temp_flag=0;
+	int pres_flag=0, mach_flag=0, temp_flag=0, goal_flag=0;
 		
 	if (!strcmp(adap_sensor, "MACH_PRES")) {
 		NbrFld = 2;
@@ -131,6 +131,10 @@ int SplitSolution (Mesh *Msh, char *prefix, char *adap_sensor)
 	else if (!strcmp(adap_sensor, "PRES")) {
 		NbrFld = 1;
 		pres_flag = 1;
+	}
+	else if (!strcmp(adap_sensor, "GOAL_ECC")) {
+		NbrFld = 2;
+		goal_flag = mach_flag = 1;
 	}
 	else {
 		printf("## ERROR SplitSolution: Unknown adap_sensor.\n");
@@ -148,6 +152,7 @@ int SplitSolution (Mesh *Msh, char *prefix, char *adap_sensor)
 	int iMach = -1;
 	int iPres = -1;
 	int iTemp = -1;
+	int iGoal = -1;
 		
 	for (i=0; i<Msh->NbrFld; i++) {
 		if ( !strcmp(Msh->SolTag[i], "Mach") && mach_flag == 1 ) {
@@ -158,6 +163,9 @@ int SplitSolution (Mesh *Msh, char *prefix, char *adap_sensor)
 		}
 		if ( !strcmp(Msh->SolTag[i], "Temperature") && temp_flag == 1 ) {
 			iTemp = i;
+		}
+		if ( !strcmp(Msh->SolTag[i], "Adaptation_Parameter") && goal_flag == 1 ) {
+			iGoal = i;
 		}
 	}
 	
@@ -183,6 +191,11 @@ int SplitSolution (Mesh *Msh, char *prefix, char *adap_sensor)
 		if ( pres_flag == 1 ){
 			idx++;
 			OutSol[idx] = Msh->Sol[iVer*Msh->SolSiz+iPres];
+		}
+
+		if ( goal_flag == 1 ){
+			idx++;
+			OutSol[idx] = Msh->Sol[iVer*Msh->SolSiz+iGoal];
 		}
 	}
 	
